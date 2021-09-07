@@ -39,6 +39,9 @@ with open("poly2D", "w") as text_file:
     epsg += 'UNIT["degree",0.0174532925199433]]'        
     
     print(epsg, file=text_file)
+
+
+#####################################################################################################################################################################
 #%%  3D Polygon with X(Lon), Y(Lat) and Z(Ele)
 #Note:  If you omit the third Z-coordinate it will default to 0.
 # You can add Measurement(m) values, Measured shape types are shapes that include a measurement value at each vertex
