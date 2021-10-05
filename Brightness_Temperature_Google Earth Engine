@@ -1,0 +1,66 @@
+
+//// INSTRUCTIONS
+////Import the shape of the city as 'Table'
+///Draw the polygon in the area as 'geometry'
+
+
+var table: Table  //(CITY SHAPE)
+var geometry: Polygon //(POLYGON OF THE AREA)
+
+//Satellite image with the Geometry of the city
+var image = ee.ImageCollection('LANDSAT/LC08/C01/T1_SR') //LANDSAT/LC08/C01/T1_SR 
+.filterDate('2020-05-01','2020-08-30')
+.filterBounds(geometry)
+.sort("CLOUD_COVER")
+.first();
+
+print(image, 'coleccion');
+//Map.addLayer(image);
+
+
+//select thermal band 10(with brightness tempereature), no calculation needed
+var thermal= image.select('B10')
+.multiply(0.1)
+.subtract(273.5)
+.clip(table);
+var b10Params = {min:5, max: 40, palette: ['blue','green','yellow','orange','red']};
+
+//print(thermal,'thermal');
+Map.addLayer(thermal, b10Params, 'Brightness Temperature (Summer Months )');
+
+
+ //find the min and max 
+{
+var min = ee.Number(thermal.reduceRegion({
+reducer: ee.Reducer.min(),
+geometry: table,
+scale: 30,
+maxPixels: 1e9
+}).values().get(0));
+print(min, 'min');
+var max = ee.Number(thermal.reduceRegion({
+reducer: ee.Reducer.max(),
+geometry: table,
+scale: 30,
+maxPixels: 1e9
+}).values().get(0));
+print(max, 'max');
+}
+
+
+//Normalization 
+
+var n = (thermal.subtract(min))
+.divide(max.subtract(min));
+
+var n2= n.multiply(10);
+var maxn2 = ee.Number(n2.reduceRegion({
+reducer: ee.Reducer.mean(),
+geometry: table,
+scale: 30,
+maxPixels: 1e9
+}).values().get(0));
+print(maxn2, 'Normalization score');
+
+//print(n,'normalization')
+
